@@ -14,7 +14,7 @@ import fire
 
 
 @contextmanager
-def workdir(path):
+def workdir(path: Path):
     """Changes working directory and returns to previous on exit."""
     prev_cwd = Path.cwd()
     chdir(path)
@@ -44,8 +44,8 @@ class MangaDex:
         self,
         manga_id: int,
         lang_code: str = "gb",
-        dl_folder="dl",
-        dest_folder="dl/cbz",
+        dl_folder: Path = "dl",
+        dest_folder: Path = "dl/cbz",
     ):
         self._api_url = "https://mangadex.org/api"
         self._default_lang_code = lang_code
@@ -83,7 +83,7 @@ class MangaDex:
             rename(f"{name}.zip", f"{name}.cbz")
             print(f"Created the CBZ file: {name}.cbz")
 
-    def _download_chapter_id(self, chapter_id: int, cbz=False):
+    def _download_chapter_id(self, chapter_id: int, cbz: bool = False):
         params = {"server": "null", "type": "chapter", "id": chapter_id}
         data = requests.get(self._api_url, params=params)
         json = data.json()
@@ -129,7 +129,7 @@ class MangaDex:
                 chapter_name = f"{self._manga_title} - Chapter {chapter}"
             self._to_cbz(chapter_name, chapter_path)
 
-    def download_all(self, cbz=True):
+    def download_all(self, cbz: bool = True):
         chapters = [
             chapter_id
             for chapters_list in self._get_chapters_list()
@@ -152,7 +152,7 @@ class MangaDex:
                 f"{self._manga_title} - {str(item).split('/')[1]}", folder
             )
 
-    def download_volume(self, volume: int, cbz=True):
+    def download_volume(self, volume: int, cbz: bool = True):
         for chapters in self._get_chapters_list():
             for chapter_id, chapter_details in chapters.items():
                 if int(chapter_details["volume"]) == volume:
@@ -164,7 +164,7 @@ class MangaDex:
                 f"{self._manga_title} - Volume {volume_num}", volume_path
             )
 
-    def download_chapter(self, chapter: int, cbz=False):
+    def download_chapter(self, chapter: int, cbz: bool = False):
         for chapter_item in self._get_chapters_list():
             for chapter_id, chapter_details in chapter_item.items():
                 try:
