@@ -10,8 +10,6 @@ from shutil import make_archive
 
 import requests
 
-import fire
-
 
 @contextmanager
 def workdir(path: Path):
@@ -33,13 +31,42 @@ def _to_zeroed_number(number: int):
         return str(number)
 
 
-def asciify(data):
+def asciify(data: str):
     return (
         unicodedata.normalize("NFKD", data).encode("ascii", "ignore").decode()
     )
 
 
 class MangaDex:
+    """Small CLI utility to help you download Mangas from Mangadex.org
+    and let's you compress them as a .cbz file once downloaded to read
+    on eReaders.
+
+    All methods have a cbz optional argument.
+    If True, it'll compress the final result to a cbz file.
+    By volume for "all" and "volume". By chapter for "chapter".
+
+    Additionnal flags:
+        --lang_code: Default to "gb". The lang code for the language you want
+        to retrieve your manga in.
+
+        --dl_folder: Default to "dl". The path to the folder you want your
+        downloads to occur in.
+
+        --dest_folder: Default to "dl/cbz". The path where to put the
+        compressed .cbz file if cbz is set to True.
+
+    Examples:
+        Download everything:
+        mangadex-dl --manga_id=35855 --download_all
+
+        Download a volume:
+        mangadex-dl --manga_id=35855 --download_volume 10
+
+        Download a chapter:
+        mangadex-dl --manga_id=35855 --download_chapter 156.5
+    """
+
     def __init__(
         self,
         manga_id: int,
@@ -130,6 +157,7 @@ class MangaDex:
             self._to_cbz(chapter_name, chapter_path)
 
     def download_all(self, cbz: bool = True):
+        """Will download every chapters available of a given Manga ID."""
         chapters = [
             chapter_id
             for chapters_list in self._get_chapters_list()
@@ -153,6 +181,7 @@ class MangaDex:
             )
 
     def download_volume(self, volume: int, cbz: bool = True):
+        """Will download all the chapters for the given volume of the Manga ID"""
         for chapters in self._get_chapters_list():
             for chapter_id, chapter_details in chapters.items():
                 if int(chapter_details["volume"]) == volume:
@@ -165,6 +194,7 @@ class MangaDex:
             )
 
     def download_chapter(self, chapter: int, cbz: bool = False):
+        """Will download a given chapter for the Manga ID"""
         for chapter_item in self._get_chapters_list():
             for chapter_id, chapter_details in chapter_item.items():
                 try:
@@ -178,4 +208,6 @@ class MangaDex:
 
 
 if __name__ == "__main__":
-    fire.Fire(MangaDex)
+    import fire
+
+    fire.Fire(MangaDex, name="mangadex-dl")
